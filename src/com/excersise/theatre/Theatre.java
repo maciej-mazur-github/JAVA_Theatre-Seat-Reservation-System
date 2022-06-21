@@ -1,9 +1,6 @@
 package com.excersise.theatre;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
 
 public class Theatre {
     private final String theatreName;
@@ -11,7 +8,7 @@ public class Theatre {
     private final int seatsPerRow;
     private final Scanner scanner = new Scanner(System.in);
 
-    Collection<Seat> seats = new ArrayList<>();
+    Collection<Seat> seats = new HashSet<>();
 
     public Theatre(String name, int rowNumber, int seatsPerRow) {
         this.theatreName = name;
