@@ -1,6 +1,7 @@
 package com.excersise.theatre;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Scanner;
 
@@ -10,7 +11,7 @@ public class Theatre {
     private final int seatsPerRow;
     private final Scanner scanner = new Scanner(System.in);
 
-    List<Seat> seats = new ArrayList<>();
+    Collection<Seat> seats = new ArrayList<>();
 
     public Theatre(String name, int rowNumber, int seatsPerRow) {
         this.theatreName = name;
@@ -33,6 +34,7 @@ public class Theatre {
 
             if(!scanner.hasNextInt()) {
                 System.out.println("Integer numbers allowed only. Please try again");
+                scanner.nextLine();
                 continue;
             }
 
