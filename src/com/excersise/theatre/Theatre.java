@@ -8,7 +8,7 @@ public class Theatre {
     private final int seatsPerRow;
     private final Scanner scanner = new Scanner(System.in);
 
-    Collection<Seat> seats = new LinkedHashSet<>();
+    List<Seat> seats = new ArrayList<>();
 
     public Theatre(String name, int rowNumber, int seatsPerRow) {
         this.theatreName = name;
@@ -130,6 +130,30 @@ public class Theatre {
         return chosenSeat;
     }
 
+    private Seat chooseSearchType(String verifiedSeatNumber) {
+        System.out.println("\tChoose search type. Enter:");
+        System.out.println("\t\t1 - for bruteforce search");
+        System.out.println("\t\t2 - for Collections.binarySearch");
+        System.out.println("\t\t3 - for binary search manually implemented");
+        System.out.print("\tWhat is your choice?\t");
+        int choice = scanner.nextInt();
+        scanner.nextLine();
+        Seat foundSeat;
+
+        if(choice == 1) {
+            foundSeat = findSeatBruteForce(verifiedSeatNumber);
+        } else if(choice == 2) {
+            foundSeat = findSeatCollectionsBinarySearch(verifiedSeatNumber);
+        } else if(choice == 3) {
+            foundSeat = findSeatManualBinarySearch(verifiedSeatNumber);
+        } else {
+            System.out.println("Invalid choice. Please try again...");
+            foundSeat = null;
+        }
+
+        return foundSeat;
+    }
+
     private void reserveSeat() {
         System.out.println("Seat reservation");
         String verifiedSeatNumber = verifySeat();
@@ -138,7 +162,7 @@ public class Theatre {
             return;
         }
 
-        Seat foundSeat = findSeat(verifiedSeatNumber);
+        Seat foundSeat = chooseSearchType(verifiedSeatNumber);
 
         if(foundSeat == null) {
             System.out.println("There is no seat " + verifiedSeatNumber);
@@ -160,7 +184,7 @@ public class Theatre {
             return;
         }
 
-        Seat foundSeat = findSeat(verifiedSeatNumber);
+        Seat foundSeat = chooseSearchType(verifiedSeatNumber);
 
         if(foundSeat == null) {
             System.out.println("There is no seat " + verifiedSeatNumber);
@@ -174,8 +198,42 @@ public class Theatre {
         }
     }
 
-    private Seat findSeat(String seatNumber) {
+    private Seat findSeatManualBinarySearch(String verifiedSeatNumber) {
+        int lowIndex = 0;
+        int highIndex = seats.size() - 1;
+        int comparison;
+        int middleIndex;
+
+        while(lowIndex <= highIndex) {
+            System.out.print(".");
+            middleIndex = (highIndex + lowIndex) / 2;
+            comparison = seats.get(middleIndex).getSeatNumber().compareTo(verifiedSeatNumber);
+
+            if(comparison > 0) {
+                highIndex = middleIndex - 1;
+            } else if(comparison < 0) {
+                lowIndex = middleIndex + 1;
+            } else {
+                return seats.get(middleIndex);
+            }
+        }
+
+        return null;
+    }
+
+    private Seat findSeatCollectionsBinarySearch(String verifiedSeatNumber) {
+        int foundSeatPosition = Collections.binarySearch(seats, new Seat(verifiedSeatNumber), null);
+
+        if(foundSeatPosition >= 0) {
+            return seats.get(foundSeatPosition);
+        } else {
+            return null;
+        }
+    }
+
+    private Seat findSeatBruteForce(String seatNumber) {
         for(Seat s : seats) {
+            System.out.print(".");
             if(s.getSeatNumber().equals(seatNumber)) {
                 return s;
             }
@@ -186,7 +244,7 @@ public class Theatre {
 
 
 
-    private static class Seat {
+    private static class Seat implements Comparable<Seat> {
         private final String seatNumber;
         private boolean reserved = false;
 
@@ -218,6 +276,11 @@ public class Theatre {
 
         public boolean isReserved() {
             return reserved;
+        }
+
+        @Override
+        public int compareTo(Seat seat) {
+            return seatNumber.compareTo(seat.getSeatNumber());
         }
     }
 }
