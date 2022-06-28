@@ -7,8 +7,9 @@ public class Theatre {
     private final int rowNumber;
     private final int seatsPerRow;
     private final Scanner scanner = new Scanner(System.in);
+    private boolean areSeatsSorted = true;
 
-    List<Seat> seats = new ArrayList<>();
+    private List<Seat> seats = new ArrayList<>();
 
     public Theatre(String name, int rowNumber, int seatsPerRow) {
         this.theatreName = name;
@@ -38,7 +39,7 @@ public class Theatre {
             choice = scanner.nextInt();
             scanner.nextLine();
 
-            if(choice < 0 || choice > 4) {
+            if(choice < 0 || choice > 6) {
                 System.out.println("Numbers in range 0-4 allowed only. Please see the available options");
             }
 
@@ -59,6 +60,12 @@ public class Theatre {
                 case 4:
                     printActions();
                     break;
+                case 5:
+                    shuffleSeats();
+                    break;
+                case 6:
+                    sortSeats();
+                    break;
             }
         }
     }
@@ -71,6 +78,8 @@ public class Theatre {
         System.out.println("\t2   -   to reserve a seat");
         System.out.println("\t3   -   to cancel reservation for a given seat");
         System.out.println("\t4   -   to print available actions");
+        System.out.println("\t5   -   to shuffle seats");
+        System.out.println("\t6   -   to sort seats");
     }
 
     private void createSeats(int rowNumber, int seatsPerRow) {
@@ -79,6 +88,25 @@ public class Theatre {
                 seats.add(new Seat(row + String.format("%02d", seatNumber)));
             }
         }
+    }
+
+    private void shuffleSeats() {
+        Collections.shuffle(seats);
+        areSeatsSorted = false;
+        System.out.println("Seats shuffled as requested");
+    }
+
+    private void sortSeats() {
+        for(int i = 0; i < seats.size() - 1; i++) {
+            for(int j = i + 1; j < seats.size(); j++) {
+                if(seats.get(i).compareTo(seats.get(j)) > 0) {
+                    Collections.swap(seats, i, j);
+                }
+            }
+        }
+
+        System.out.println("Seats now ordered as requested");
+        areSeatsSorted = true;
     }
 
     private void showSeats() {
@@ -130,28 +158,41 @@ public class Theatre {
         return chosenSeat;
     }
 
-    private Seat chooseSearchType(String verifiedSeatNumber) {
-        System.out.println("\tChoose search type. Enter:");
-        System.out.println("\t\t1 - for bruteforce search");
-        System.out.println("\t\t2 - for Collections.binarySearch");
-        System.out.println("\t\t3 - for binary search manually implemented");
-        System.out.print("\tWhat is your choice?\t");
-        int choice = scanner.nextInt();
-        scanner.nextLine();
+    private Seat findSeat(String verifiedSeatNumber, int searchType) {
         Seat foundSeat;
 
-        if(choice == 1) {
+        if(searchType == 1) {
             foundSeat = findSeatBruteForce(verifiedSeatNumber);
-        } else if(choice == 2) {
+        } else if(searchType == 2) {
             foundSeat = findSeatCollectionsBinarySearch(verifiedSeatNumber);
-        } else if(choice == 3) {
-            foundSeat = findSeatManualBinarySearch(verifiedSeatNumber);
         } else {
-            System.out.println("Invalid choice. Please try again...");
-            foundSeat = null;
+            foundSeat = findSeatManualBinarySearch(verifiedSeatNumber);
         }
 
         return foundSeat;
+    }
+
+    private int chooseSearchType() {
+        int choice = 1;
+
+        if(areSeatsSorted) {
+            System.out.println("\tChoose search type. Enter:");
+            System.out.println("\t\t1 - for bruteforce search");
+            System.out.println("\t\t2 - for Collections.binarySearch");
+            System.out.println("\t\t3 - for binary search manually implemented");
+            System.out.print("\tWhat is your choice?\t");
+            choice = scanner.nextInt();
+            scanner.nextLine();
+
+            if(choice < 1 || choice > 3) {
+                choice = -1;
+                System.out.println("Invalid choice. Please try again...");
+            }
+        } else {
+            System.out.println("Seat will be searched using BruteForce method");
+        }
+
+        return choice;
     }
 
     private void reserveSeat() {
@@ -162,7 +203,13 @@ public class Theatre {
             return;
         }
 
-        Seat foundSeat = chooseSearchType(verifiedSeatNumber);
+        int searchType = chooseSearchType();
+
+        if(searchType < 0) {
+            return;
+        }
+
+        Seat foundSeat = findSeat(verifiedSeatNumber, searchType);
 
         if(foundSeat == null) {
             System.out.println("There is no seat " + verifiedSeatNumber);
@@ -184,7 +231,13 @@ public class Theatre {
             return;
         }
 
-        Seat foundSeat = chooseSearchType(verifiedSeatNumber);
+        int searchType = chooseSearchType();
+
+        if(searchType < 0) {
+            return;
+        }
+
+        Seat foundSeat = findSeat(verifiedSeatNumber, searchType);
 
         if(foundSeat == null) {
             System.out.println("There is no seat " + verifiedSeatNumber);
