@@ -1,5 +1,6 @@
 package com.excersise.theatre;
 
+
 import java.util.*;
 
 public class Theatre {
@@ -39,7 +40,7 @@ public class Theatre {
             choice = scanner.nextInt();
             scanner.nextLine();
 
-            if(choice < 0 || choice > 6) {
+            if(choice < 0 || choice > 7) {
                 System.out.println("Numbers in range 0-4 allowed only. Please see the available options");
             }
 
@@ -64,10 +65,31 @@ public class Theatre {
                     shuffleSeats();
                     break;
                 case 6:
-                    sortSeats();
+                    sortSeatsByNumber();
+                    break;
+                case 7:
+                    sortSeatsByPriceOrder();
                     break;
             }
         }
+    }
+
+    private void sortSeatsByPriceOrder() {
+        Comparator<Seat> PRICE_ORDER = new Comparator<Seat>() {
+            @Override
+            public int compare(Seat seat1, Seat seat2) {
+                if(seat1.getPrice() > seat2.getPrice()) {
+                    return 1;
+                } else if(seat1.getPrice() < seat2.getPrice()) {
+                    return -1;
+                } else {
+                    return 0;
+                }
+            }
+        };
+
+        Collections.sort(seats, PRICE_ORDER);
+        System.out.println("Seats sorted by price as requested");
     }
 
     private void printActions() {
@@ -79,13 +101,26 @@ public class Theatre {
         System.out.println("\t3   -   to cancel reservation for a given seat");
         System.out.println("\t4   -   to print available actions");
         System.out.println("\t5   -   to shuffle seats");
-        System.out.println("\t6   -   to sort seats");
+        System.out.println("\t6   -   to sort seats by seat number");
+        System.out.println("\t7   -   to sort seats by price");
     }
 
     private void createSeats(int rowNumber, int seatsPerRow) {
+        int rowMargin = rowNumber / 4;
+        int seatMargin = seatsPerRow / 4;
+
+
         for(char row = 'A'; row <= ('A' + rowNumber - 1); row++) {
             for(int seatNumber = 1; seatNumber <= seatsPerRow; seatNumber++) {
-                seats.add(new Seat(row + String.format("%02d", seatNumber)));
+                double price = 12.0;
+
+                if(row < ('A' + rowMargin) && seatNumber > seatMargin && seatNumber < (seatsPerRow - seatMargin)) {
+                    price = 14.0;
+                } else if (row >= ('A' + rowNumber - rowMargin) && (seatNumber < seatMargin || seatNumber > seatsPerRow - seatMargin)) {
+                    price = 7.0;
+                }
+
+                seats.add(new Seat(row + String.format("%02d", seatNumber), price));
             }
         }
     }
@@ -96,7 +131,7 @@ public class Theatre {
         System.out.println("Seats shuffled as requested");
     }
 
-    private void sortSeats() {
+    private void sortSeatsByNumber() {
         for(int i = 0; i < seats.size() - 1; i++) {
             for(int j = i + 1; j < seats.size(); j++) {
                 if(seats.get(i).compareTo(seats.get(j)) > 0) {
@@ -117,15 +152,16 @@ public class Theatre {
         String builder;
 
         for(Seat s : seats) {
-            builder = s.getSeatNumber();
+            builder = s.getSeatNumber() + " $" + s.getPrice();
 
             if(s.isReserved()) {
-                builder += "(R)";
+                builder += " (R)";
             }
+
 
             counter++;
 
-            builder = String.format("%-9s", builder);
+            builder = String.format("%-16s", builder);
 
             if(counter % seatsPerRow == 0) {
                 builder += "\n";
@@ -275,7 +311,7 @@ public class Theatre {
     }
 
     private Seat findSeatCollectionsBinarySearch(String verifiedSeatNumber) {
-        int foundSeatPosition = Collections.binarySearch(seats, new Seat(verifiedSeatNumber), null);
+        int foundSeatPosition = Collections.binarySearch(seats, new Seat(verifiedSeatNumber, 0), null);
 
         if(foundSeatPosition >= 0) {
             return seats.get(foundSeatPosition);
@@ -300,9 +336,11 @@ public class Theatre {
     private static class Seat implements Comparable<Seat> {
         private final String seatNumber;
         private boolean reserved = false;
+        private double price;
 
-        public Seat(String seatNumber) {
+        public Seat(String seatNumber, double price) {
             this.seatNumber = seatNumber;
+            this.price = price;
         }
 
         public String getSeatNumber() {
@@ -334,6 +372,10 @@ public class Theatre {
         @Override
         public int compareTo(Seat seat) {
             return seatNumber.compareTo(seat.getSeatNumber());
+        }
+
+        public double getPrice() {
+            return price;
         }
     }
 }
