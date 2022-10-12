@@ -8,9 +8,9 @@ public class Theatre {
     private final int rowNumber;
     private final int seatsPerRow;
     private final Scanner scanner = new Scanner(System.in);
-    private boolean areSeatsSorted = true;
+    private boolean areSeatsSortedByName = true;
 
-    private List<Seat> seats = new ArrayList<>();
+    private final List<Seat> seats = new ArrayList<>();
 
     public Theatre(String name, int rowNumber, int seatsPerRow) {
         this.theatreName = name;
@@ -90,6 +90,7 @@ public class Theatre {
 
         Collections.sort(seats, PRICE_ORDER);
         System.out.println("Seats sorted by price as requested");
+        areSeatsSortedByName = false;
     }
 
     private void printActions() {
@@ -114,9 +115,9 @@ public class Theatre {
             for(int seatNumber = 1; seatNumber <= seatsPerRow; seatNumber++) {
                 double price = 12.0;
 
-                if(row < ('A' + rowMargin) && seatNumber > seatMargin && seatNumber < (seatsPerRow - seatMargin)) {
+                if(row < ('A' + rowMargin) && seatNumber > seatMargin && seatNumber < (seatsPerRow - seatMargin + 1)) {
                     price = 14.0;
-                } else if (row >= ('A' + rowNumber - rowMargin) && (seatNumber < seatMargin || seatNumber > seatsPerRow - seatMargin)) {
+                } else if (row >= ('A' + rowNumber - rowMargin) && (seatNumber <= seatMargin || seatNumber > seatsPerRow - seatMargin)) {
                     price = 7.0;
                 }
 
@@ -127,11 +128,11 @@ public class Theatre {
 
     private void shuffleSeats() {
         Collections.shuffle(seats);
-        areSeatsSorted = false;
+        areSeatsSortedByName = false;
         System.out.println("Seats shuffled as requested");
     }
 
-    private void sortSeatsByNumber() {
+    private void sortSeatsByNumber() {      // Selection Sort algorithm used here
         for(int i = 0; i < seats.size() - 1; i++) {
             for(int j = i + 1; j < seats.size(); j++) {
                 if(seats.get(i).compareTo(seats.get(j)) > 0) {
@@ -141,7 +142,7 @@ public class Theatre {
         }
 
         System.out.println("Seats now ordered as requested");
-        areSeatsSorted = true;
+        areSeatsSortedByName = true;
     }
 
     private void showSeats() {
@@ -161,7 +162,7 @@ public class Theatre {
 
             counter++;
 
-            builder = String.format("%-16s", builder);
+            builder = String.format("%-16s", builder);  // left-justifying builder within 16-character width
 
             if(counter % seatsPerRow == 0) {
                 builder += "\n";
@@ -172,10 +173,10 @@ public class Theatre {
     }
 
     private String verifySeat() {
-        System.out.print("Enter seat number: ");
-        String chosenSeat = scanner.nextLine().toUpperCase();
-        char chosenRow = (chosenSeat.substring(0, 1)).charAt(0);
-        int seatNumberInRow = Integer.parseInt(chosenSeat.substring(1));
+        System.out.print("Enter full seat number (e.g. a5, h04, B12 etc.): ");
+        String chosenSeatString = scanner.nextLine().toUpperCase();
+        char chosenRow = (chosenSeatString.substring(0, 1)).charAt(0);
+        int seatNumberInRow = Integer.parseInt(chosenSeatString.substring(1));
 
         if(chosenRow < 'A' || chosenRow > ('A' + rowNumber - 1)) {
             System.out.println("There is no row " + chosenRow);
@@ -188,10 +189,10 @@ public class Theatre {
         }
 
         if(seatNumberInRow < 10) {
-            chosenSeat = chosenRow + "0" + seatNumberInRow;
+            chosenSeatString = chosenRow + "0" + seatNumberInRow;
         }
 
-        return chosenSeat;
+        return chosenSeatString;
     }
 
     private Seat findSeat(String verifiedSeatNumber, int searchType) {
@@ -211,8 +212,8 @@ public class Theatre {
     private int chooseSearchType() {
         int choice = 1;
 
-        if(areSeatsSorted) {
-            System.out.println("\tChoose search type. Enter:");
+        if(areSeatsSortedByName) {   // areSeatsSortedByName flag is checked here as binary search algorithms are only applicable for lists sorted by name in ascending order (hence either for shuffled array list or for sorted by price one binary search would not be applicable)
+            System.out.println("\tIn order to be reserved a seat needs to be found first. Choose search type. Enter:");
             System.out.println("\t\t1 - for bruteforce search");
             System.out.println("\t\t2 - for Collections.binarySearch");
             System.out.println("\t\t3 - for binary search manually implemented");
@@ -333,10 +334,10 @@ public class Theatre {
 
 
 
-    private static class Seat implements Comparable<Seat> {
+    private class Seat implements Comparable<Seat> {
         private final String seatNumber;
         private boolean reserved = false;
-        private double price;
+        private final double price;
 
         public Seat(String seatNumber, double price) {
             this.seatNumber = seatNumber;
